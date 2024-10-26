@@ -1,25 +1,38 @@
 import express from "express";
 import dotenv from "dotenv";
-import { setupSwagger, swaggerSpec } from "./swagger/swagger.js";
-import router from "./routes/user.js";
+import cors from "cors";
+import mongoose from "mongoose";
+import cookieParser from "cookie-parser";
+import { DATABASE_URL, PORT, ORIGIN } from "./types/index.js";
+import AuthRouter from "./routes/User.js";
 
 dotenv.config();
-
 const app = express();
-setupSwagger(app);
-
-
-
+const PORT: PORT = Number(process.env.PORT) || 3000;
+const ORIGIN: ORIGIN = process.env.ORIGIN!;
+app.use(
+  cors({
+    origin: ORIGIN,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
+  })
+);
+//作用：解析请求中的cookie
+app.use(cookieParser());
+//作用：解析请求中的json数据
 app.use(express.json());
-app.use("/", router);
-app.get('/api-docs-json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec); // 生成 Swagger 文档 JSON
+const DatabaseURL: DATABASE_URL = process.env.DATABASE_URL!;
+app.use("/api/auth", AuthRouter);
+
+const server = app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-
-
-app.listen(3000, () => {
-  console.log("Server is running on http://localhost:3000");
-  console.log("API docs available at http://localhost:3000/api-docs");
-});
+mongoose
+  .connect(DatabaseURL)
+  .then(() => {
+    console.log("Connected to the database");
+  })
+  .catch((error) => {
+    console.log("Error connecting to the database: ", error.message);
+  });
