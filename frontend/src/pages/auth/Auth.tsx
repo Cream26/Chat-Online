@@ -6,17 +6,61 @@ import { Email, Password, ConfirmPassword } from "@/types/auth";
 import { Button } from "@/components/ui/button";
 import BackGround from "@/assets/StockSnap_1STVFMTBJY.jpg";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { toast } from "sonner";
+import { API } from "@/lib/api";
+import { SIGNUP_ROUTE, LOGIN_ROUTE } from "@/utils/constants";
+import { useNavigate } from "react-router-dom";
 const Auth = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState<Email>("");
   const [password, setPassword] = useState<Password>("");
   const [confirmPassword, setConfirmPassword] = useState<ConfirmPassword>("");
   //密码的显示与隐藏
   const [showPassword, setShowPassword] = useState(false);
+
+  const validateForm = (isSignUp: boolean) => {
+    if (!email.length) {
+      toast.error("Email is required");
+      return false;
+    }
+    if (!password.length) {
+      toast.error("Password is required");
+      return false;
+    }
+    if (isSignUp && password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return false;
+    }
+    return true;
+  };
   const handleLogin = async () => {
-    console.log(email, password);
+    if (validateForm(false)) {
+      const res = await API.post(
+        LOGIN_ROUTE,
+        { email, password },
+        { withCredentials: true }
+      );
+      if(res.data.user.id) {
+        if(res.data.user.profileSetup) {
+          navigate("/chat");
+        } else {
+          navigate("/profile");
+        }
+      }
+    }
   };
   const handleSignUp = async () => {
-    console.log(email, password, confirmPassword);
+    if (validateForm(true)) {
+      //withCredentials: true 表示允许跨域请求携带cookie
+      const res = await API.post(
+        SIGNUP_ROUTE,
+        { email, password },
+        { withCredentials: true }
+      );
+      if (res.status === 201) {
+        navigate("/profile");
+      }
+    }
   };
   return (
     <div className="h-[100vh] w-[100vw] flex items-center justify-center">
@@ -32,7 +76,7 @@ const Auth = () => {
             </p>
           </div>
           <div className="flex items-center justify-center w-full">
-            <Tabs className="w-3/4">
+            <Tabs className="w-3/4" defaultValue="login">
               <TabsList className="w-full rounded-none bg-transparent">
                 <TabsTrigger
                   value={"login"}
@@ -47,7 +91,10 @@ const Auth = () => {
                   SignUp
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="login" className="flex flex-col gap-5 mt-10 relative">
+              <TabsContent
+                value="login"
+                className="flex flex-col gap-5 mt-10 relative"
+              >
                 <Input
                   placeholder="Email"
                   type="email"
@@ -66,12 +113,17 @@ const Auth = () => {
                   type="button"
                   className="bg-white shadow-none hover:bg-white absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                   onClick={() => setShowPassword(!showPassword)}
-                >{showPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}</Button>
+                >
+                  {showPassword ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
+                </Button>
                 <Button className="rounded-full p-6" onClick={handleLogin}>
                   Login
                 </Button>
               </TabsContent>
-              <TabsContent value="signUp" className="flex flex-col gap-5 relative">
+              <TabsContent
+                value="signUp"
+                className="flex flex-col gap-5 relative"
+              >
                 <Input
                   placeholder="Email"
                   type="email"
