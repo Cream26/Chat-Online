@@ -10,11 +10,14 @@ import { toast } from "sonner";
 import { API } from "@/lib/api";
 import { SIGNUP_ROUTE, LOGIN_ROUTE } from "@/utils/constants";
 import { useNavigate } from "react-router-dom";
+import { useAppStore } from "@/store";
 const Auth = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState<Email>("");
   const [password, setPassword] = useState<Password>("");
   const [confirmPassword, setConfirmPassword] = useState<ConfirmPassword>("");
+
+  const { setUserinfo } = useAppStore();
   //密码的显示与隐藏
   const [showPassword, setShowPassword] = useState(false);
 
@@ -41,6 +44,7 @@ const Auth = () => {
         { withCredentials: true }
       );
       if(res.data.user.id) {
+        setUserinfo(res.data.user);
         if(res.data.user.profileSetup) {
           navigate("/chat");
         } else {
@@ -58,6 +62,7 @@ const Auth = () => {
         { withCredentials: true }
       );
       if (res.status === 201) {
+        setUserinfo(res.data.user);
         navigate("/profile");
       }
     }
