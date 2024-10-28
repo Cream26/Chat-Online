@@ -1,24 +1,24 @@
 import { Request, Response } from "express";
 import User from "../models/User.js";
-import pkg  from "jsonwebtoken";
-import { JWT_SECRET } from "../types/index.js";
-import { AuthRequestBody, AuthControllerFunction } from "../types/Auth.js";
+import pkg from "jsonwebtoken";
+import { AuthRequestBody } from "../types/Auth.js";
 import { compare } from "bcrypt";
-const {sign} = pkg;
+const { sign } = pkg;
 // token的有效期为3天
 const maxAge: number = 3 * 24 * 60 * 60 * 1000;
-// jwt的密钥
-const jwt: JWT_SECRET = String(process.env.JWT_SECRET);
 //创建token
 const createToken = (email: string, userId: string) => {
+  const jwt = process.env.JWT_KEY as string;
+  console.log("JWT_KEY in createToken:", jwt);
   return sign({ email, userId }, jwt, { expiresIn: maxAge });
 };
 // 注册
-export const signUp: AuthControllerFunction = async (req: Request, res: Response) => {
+export const signUp = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body as AuthRequestBody;
     if (!email || !password) {
       res.status(400).json({ error: "Email and password are required" });
+      return;
     }
     const user = await User.create({ email, password });
     res.cookie("jwt", createToken(email, user.id), {
@@ -39,11 +39,12 @@ export const signUp: AuthControllerFunction = async (req: Request, res: Response
   }
 };
 // 登录
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body as AuthRequestBody;
     if (!email || !password) {
       res.status(400).json({ error: "Email and password are required" });
+      return;
     }
     const user = await User.findOne({ email });
     if (!user) {
@@ -53,6 +54,7 @@ export const login = async (req: Request, res: Response) => {
     const auth = await compare(password, user.password);
     if (!auth) {
       res.status(401).json({ error: "Invalid password" });
+      return;
     }
     res.cookie("jwt", createToken(email, user.id), {
       maxAge,
@@ -69,6 +71,31 @@ export const login = async (req: Request, res: Response) => {
         image: user.image,
         color: user.color,
       },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+//获取用户信息
+export const getUserInfo = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const userData = await User.findById(req.userId);
+    if (!userData) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    res.status(200).json({
+      id: userData.id,
+      email: userData.email,
+      profileSetup: userData.profileSetup,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      image: userData.image,
+      color: userData.color,
     });
   } catch (error) {
     console.log(error);
