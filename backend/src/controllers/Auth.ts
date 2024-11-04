@@ -102,3 +102,46 @@ export const getUserInfo = async (
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+//更新用户信息
+export const updateProfile = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId } = req;
+    const { firstName, lastName, color } = req.body as {
+      firstName: string;
+      lastName: string;
+      color: string;
+    };
+    if (!firstName || !lastName || color !== undefined) {
+      res
+        .status(400)
+        .json({ error: "FirstName LastName and color is required" });
+      return;
+    }
+    const userData = await User.findByIdAndUpdate(
+      userId,
+      {
+        firstName,
+        lastName,
+        color,
+        profileSetup: true,
+      },
+      { new: true, runValidators: true }
+    );
+    res.status(200).json({
+      id: userData?.id,
+      email: userData?.email,
+      profileSetup: userData?.profileSetup,
+      firstName: userData?.firstName,
+      lastName: userData?.lastName,
+      image: userData?.image,
+      color: userData?.color,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
