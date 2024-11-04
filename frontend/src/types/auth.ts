@@ -6,6 +6,8 @@ export interface UserInfo {
   id: string;
   email: string;
   profileSetup: boolean;
+  firstName?: string;
+  lastName?: string;
 }
 export interface AuthStore {
   userinfo: UserInfo | null;

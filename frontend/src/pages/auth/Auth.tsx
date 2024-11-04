@@ -2,7 +2,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Vite from "../../../public/vite.svg";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Email, Password, ConfirmPassword } from "@/types/auth";
+import { Email, Password, ConfirmPassword } from "@/types/Auth";
 import { Button } from "@/components/ui/button";
 import BackGround from "@/assets/StockSnap_1STVFMTBJY.jpg";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
