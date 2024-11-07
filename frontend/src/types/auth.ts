@@ -8,6 +8,8 @@ export interface UserInfo {
   profileSetup: boolean;
   firstName?: string;
   lastName?: string;
+  color?: number;
+  image?: string | null;
 }
 export interface AuthStore {
   userinfo: UserInfo | null;
