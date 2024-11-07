@@ -3,6 +3,9 @@ import User from "../models/User.js";
 import pkg from "jsonwebtoken";
 import { AuthRequestBody } from "../types/Auth.js";
 import { compare } from "bcrypt";
+import { renameSync, unlinkSync } from "fs";
+import crypto from "crypto";
+import path from "path";
 const { sign } = pkg;
 // token的有效期为3天
 const maxAge: number = 3 * 24 * 60 * 60 * 1000;
@@ -140,6 +143,60 @@ export const updateProfile = async (
       image: userData?.image,
       color: userData?.color,
     });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+//添加用户头像
+export const addProfileImage = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: "Image is required" });
+      return;
+    }
+    // 生成随机哈希值作为文件名
+    const fileExtension = path.extname(req.file.originalname);
+    const hashName = crypto.randomBytes(16).toString("hex");
+    const fileName = `uploads/profiles/${hashName}${fileExtension}`;
+    renameSync(req.file.path, fileName);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.userId,
+      { image: fileName },
+      { new: true, runValidators: true }
+    );
+    res.status(200).json({
+      image: updatedUser?.image,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+//删除用户头像
+export const removeProfileImage = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { userId } = req;
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    if (user.image) {
+      unlinkSync(user.image);
+    }
+    user.image = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Image removed successfully" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal server error" });

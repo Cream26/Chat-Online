@@ -17,6 +17,10 @@ app.use(
     credentials: true,
   })
 );
+
+// 作用：设置静态文件目录，可以使得uploads/profiles目录下的文件可以作为静态资源被客户端访问
+app.use("/uploads/profiles", express.static("uploads/profiles"));
+
 //作用：解析请求中的cookie
 app.use(cookieParser());
 //作用：解析请求中的json数据
