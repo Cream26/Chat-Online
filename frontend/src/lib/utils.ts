@@ -1,6 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import animation from "../assets/Animation - 1731340235823.json";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -20,8 +19,3 @@ export const getColor = (color: number):string |undefined => {
   return undefined;
 };
 
-export const animationOptions = {
-  loop: true,
-  autoplay: true,
-  animationData: animation,
-};
