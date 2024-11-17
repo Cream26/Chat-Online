@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import { DATABASE_URL, PORT, ORIGIN } from "./types/index.js";
 import AuthRouter from "./routes/User.js";
+import ContactsRouter from "./routes/Contacts.js";
 
 dotenv.config();
 const app = express();
@@ -27,6 +28,7 @@ app.use(cookieParser());
 app.use(express.json());
 const DatabaseURL: DATABASE_URL = process.env.DATABASE_URL!;
 app.use("/api/auth", AuthRouter);
+app.use("/api/contacts", ContactsRouter);
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
