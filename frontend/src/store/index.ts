@@ -1,4 +1,10 @@
-import {create} from 'zustand';
+import { create } from 'zustand';
 import { createAuthStore } from './modules/Auth';
-// 创建全局 Store
-export const useAppStore = create(createAuthStore);
+import { createChatSlice } from './modules/Chat';
+
+type AppState = ReturnType<typeof createAuthStore> & ReturnType<typeof createChatSlice>;
+
+export const useAppStore = create<AppState>((...a) => ({
+  ...createAuthStore(...a),
+  ...createChatSlice(...a),
+}));

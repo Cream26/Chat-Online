@@ -1,7 +1,7 @@
 import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import { useAppStore } from "@/store";
 import { getColor } from "@/lib/utils";
-import { HOST } from "@/utils/constants";
+import { HOST, LOGOUT_ROUTE } from "@/utils/constants";
 import { useNavigate } from "react-router-dom";
 import {
   Tooltip,
@@ -11,12 +11,21 @@ import {
 } from "@/components/ui/tooltip";
 import { FiEdit2 } from "react-icons/fi";
 import { IoPowerSharp } from "react-icons/io5";
+import { API } from "@/lib/api";
 const ProfileInfo = () => {
   const navigate = useNavigate();
-  const { userinfo } = useAppStore();
-  const Logout = async () =>{
-    console.log("Logout");
-  }
+  const { userinfo,setUserinfo } = useAppStore();
+  const Logout = async () => {
+    try {
+      const res = await API.post(LOGOUT_ROUTE, {}, { withCredentials: true });
+      if (res.status === 200) {
+        navigate("/auth");
+        setUserinfo(null);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <div className="absolute bottom-0 h-16 flex items-center justify-between px-10 w-full bg-[#212b33]">
       <div className="flex gap-3 items-center justify-center">
@@ -30,7 +39,7 @@ const ProfileInfo = () => {
               />
             ) : (
               <div
-                className={`uppercase w-32 h-32 md:w-48 md:h-48 text-lg border-[1px] flex justify-center items-center rounded-full ${getColor(
+                className={`uppercase w-12 h-12 text-lg border-[1px] flex justify-center items-center rounded-full ${getColor(
                   userinfo?.color ?? 0
                 )} `}
               >
